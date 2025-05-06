@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: permisos-roles-deployment
+  labels:
+    app: permisos-roles
 spec:
   replicas: 2
   selector:
@@ -20,4 +22,19 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://postgres:password@postgres-service:5432/mydatabase"
+          value: "sqlite:///./roles.db"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: permisos-roles-service
+  labels:
+    app: permisos-roles
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: permisos-roles
