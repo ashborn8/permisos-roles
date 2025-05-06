@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+@app.get("/health") #Endpoint de prueba para los cambios en el pipeline
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy"}
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize database connection and create tables."""
