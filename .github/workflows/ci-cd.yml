@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
@@ -10,9 +10,9 @@ on:
       - main
 
 jobs:
+  # Build stage
   build:
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -30,11 +30,11 @@ jobs:
     - name: Run tests
       run: |
         pip install pytest
-        pytest app/tests/
+        pytest app/tests/ --verbose
 
     - name: Build Docker image
       run: |
-        docker build -t permissions-roles .
+        docker build -t permissions-roles:$GITHUB_SHA .
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -44,12 +44,25 @@ jobs:
 
     - name: Push Docker image
       run: |
-        docker tag permissions-roles ${{ secrets.DOCKERHUB_USERNAME }}/permissions-roles:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/permissions-roles:latest
+        docker tag permissions-roles:$GITHUB_SHA ${{ secrets.DOCKERHUB_USERNAME }}/permissions-roles:$GITHUB_SHA
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/permissions-roles:$GITHUB_SHA
+
+  # Deploy stage (only on main branch)
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
     - name: Deploy to Kubernetes
-      if: github.ref == 'refs/heads/main'
       uses: kubernetes-sigs/kustomize-controller@v0.1.0
       with:
         kustomize-path: .
         kubeconfig: ${{ secrets.KUBECONFIG }}
+
+    - name: Verify deployment
+      run: |
+        kubectl get pods
+        kubectl get services
