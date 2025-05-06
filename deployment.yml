@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: permisos-roles-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: permisos-roles
+  template:
+    metadata:
+      labels:
+        app: permisos-roles
+    spec:
+      containers:
+      - name: permisos-roles
+        image: junsy888/permisos-roles:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:password@postgres-service:5432/mydatabase"
