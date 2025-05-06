@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - test/ci-cd
   pull_request:
     branches:
       - main
@@ -26,11 +27,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pytest pytest-cov
 
     - name: Run tests
       run: |
-        pip install pytest
-        pytest app/tests/ --verbose
+        cd app
+        python -m pytest tests/ --verbose --cov=. --cov-report=xml
 
     - name: Build Docker image
       run: |
