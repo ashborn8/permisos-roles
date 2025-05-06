@@ -22,8 +22,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest
+        pip list
+    
+    - name: List directory structure
+      run: |
+        pwd
+        ls -la
+        ls -la app/
+        ls -la app/tests/
     
     - name: Run tests
       run: |
         cd app
-        python -m pytest tests/ -v
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        python -m pytest tests/ -v --capture=no
